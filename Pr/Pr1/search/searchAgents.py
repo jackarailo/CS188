@@ -40,6 +40,7 @@ from game import Actions
 import util
 import time
 import search
+import itertools # ioannis import for permutations
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -380,19 +381,22 @@ def cornersHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
     # The corners Heuristic I will implement will be the SUM manhattan distance
     # The SUM will be:
-    #                 1) Distance to the closest node
-    #                 2) Distance from the closest to its closest node
-    #                 3) Distance from its closest to its closest node
-    current_node = state[0]
-    remainingCorners = list(state[1])
-    x = len(remainingCorners)
-    minDistance = []
-    for i in range(x):
-        distance_from_current = [abs(current_node[0] - corner[0]) + abs(current_node[1] - corner[1]) for corner in remainingCorners]
-        minIndex = distance_from_current.index(min(distance_from_current))
-        minDistance.append(min(distance_from_current))
-        current_node = remainingCorners.pop(minIndex)
-    return sum(minDistance)
+    #                 1) Distances to a node iterating to all nodes
+    #                 2) Plus distances from these to iterating to the 
+    #                    remaining nodes
+    #                 3) Min distance of distances
+    cornersPermutations = list(itertools.permutations(corners))
+    distance_for_Permutation = [0]
+    i = 0
+    for cornerPermutation in cornersPermutations:
+        current_node = state[0]
+        for corner in cornerPermutation:
+            distance_for_Permutation[i] += abs(current_node[0] - corner[0]) + abs(current_node[1] - corner[1])
+            current_node = corner
+        distance_for_Permutation.append(0)
+        i += 1
+    #minIndex = distance_for_Permutation.index(min(distance_for_Permutation))
+    return min(distance_for_Permutation)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -488,19 +492,23 @@ def foodHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
     # The food Heuristic I will implement will be the SUM manhattan distance
     # The SUM will be:
-    #                 1) Distance to the closest node
-    #                 2) Distance from the closest to its closest node
-    #                 3) Distance from its closest to its closest node
-    current_node = position
-    remainingCorners = foodGrid.asList()
-    x = len(remainingCorners)
-    minDistance = []
-    for i in range(x):
-        distance_from_current = [abs(current_node[0] - corner[0]) + abs(current_node[1] - corner[1]) for corner in remainingCorners]
-        minIndex = distance_from_current.index(min(distance_from_current))
-        minDistance.append(min(distance_from_current))
-        current_node = remainingCorners.pop(minIndex)
-    return sum(minDistance)
+    #                 1) Distances to a node iterating to all nodes
+    #                 2) Plus distances from these to iterating to the 
+    #                    remaining nodes
+    #                 3) Min distance of distances
+    food = foodGrid.asList()
+    foodPermutations = list(itertools.permutations(food))
+    distance_for_Permutation = [0]
+    i = 0
+    for foodPermutation in foodPermutations:
+        current_node = position
+        for food_pos in foodPermutation:
+            distance_for_Permutation[i] += abs(current_node[0] - food_pos[0]) + abs(current_node[1] - food_pos[1])
+            current_node = food_pos
+        distance_for_Permutation.append(0)
+        i += 1
+    #minIndex = distance_for_Permutation.index(min(distance_for_Permutation))
+    return min(distance_for_Permutation)
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
