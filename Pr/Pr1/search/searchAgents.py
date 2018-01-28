@@ -290,6 +290,7 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
         self.costFn = lambda x: 1
+        self.startingGameState = startingGameState
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
@@ -379,25 +380,21 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    # The corners Heuristic I will implement will be the SUM manhattan distance
-    # The SUM will be:
-    #                 1) Distances to a node iterating to all nodes
-    #                 2) Plus distances from these to iterating to the 
-    #                    remaining nodes
-    #                 3) Min distance of distances
-    cornersPermutations = list(itertools.permutations(corners))
-    distance_for_Permutation = [0]
-    i = 0
-    for cornerPermutation in cornersPermutations:
-        current_node = state[0]
-        for corner in cornerPermutation:
-            distance_for_Permutation[i] += abs(current_node[0] - corner[0]) + abs(current_node[1] - corner[1])
-            current_node = corner
-        distance_for_Permutation.append(0)
-        i += 1
-    #minIndex = distance_for_Permutation.index(min(distance_for_Permutation))
-    return min(distance_for_Permutation)
+    remainingCorners = state[1]
+    if len(remainingCorners) > 0:
+        current_state = state[0]
+        # original approach with manhattan distance of furthest node
+        maxDistance = max([util.manhattanDistance(current_state, corner) for corner in remainingCorners])
+        # alternative approach with true distance
+        # fewer nodes expanded but each expansion is more expensive
+        ##maxDistance = max([mazeDistance(current_state, corner, problem.startingGameState) for corner in remainingCorners])
+        return maxDistance
+    else:
+        return 0
 
+
+
+        
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -453,6 +450,7 @@ class FoodSearchProblem:
                 return 999999
             cost += 1
         return cost
+        
 
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -490,25 +488,15 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    # The food Heuristic I will implement will be the SUM manhattan distance
-    # The SUM will be:
-    #                 1) Distances to a node iterating to all nodes
-    #                 2) Plus distances from these to iterating to the 
-    #                    remaining nodes
-    #                 3) Min distance of distances
-    food = foodGrid.asList()
-    foodPermutations = list(itertools.permutations(food))
-    distance_for_Permutation = [0]
-    i = 0
-    for foodPermutation in foodPermutations:
-        current_node = position
-        for food_pos in foodPermutation:
-            distance_for_Permutation[i] += abs(current_node[0] - food_pos[0]) + abs(current_node[1] - food_pos[1])
-            current_node = food_pos
-        distance_for_Permutation.append(0)
-        i += 1
-    #minIndex = distance_for_Permutation.index(min(distance_for_Permutation))
-    return min(distance_for_Permutation)
+    # The food Heuristic I will implement will be the furthest node plus
+    # the remaining number of nodes
+    foodList = foodGrid.asList()
+    if len(foodList) > 0:
+        far_food_dist = max([mazeDistance(position, foodPos, problem.startingGameState) for foodPos in foodList])
+        #print(far_food_dist)
+        return far_food_dist
+    else:
+        return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -539,8 +527,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        return search.bfs(problem)
+        
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
     A search problem for finding a path to any food.
@@ -573,10 +561,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x,y = state
-
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        return self.food[x][y]
+        
 def mazeDistance(point1, point2, gameState):
     """
     Returns the maze distance between any two points, using the search functions

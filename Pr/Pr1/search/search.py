@@ -107,11 +107,9 @@ def depthFirstSearch(problem):
         # check happens before expansion
         if problem.isGoalState(leaf_node):
             # return the solution if solution is found
-            print("we found the goal!")
+#             print("we found the goal!")
             return pathActions 
         for node, action, cost in problem.getSuccessors(leaf_node):
-            # I need to fix this
-            # I need to add checking if node is in the fringe
             if node in exploredorFringeSet:
                 pass
             else:
@@ -145,11 +143,9 @@ def breadthFirstSearch(problem):
         # check happens before expansion
         if problem.isGoalState(leaf_node):
             # return the solution if solution is found
-            print("we found the goal!")
+            #print("we found the goal!")
             return pathActions 
         for node, action, cost in problem.getSuccessors(leaf_node):
-            # I need to fix this
-            # I need to add checking if node is in the fringe
             if node in exploredorFringeSet:
                 pass
             else:
@@ -183,11 +179,9 @@ def uniformCostSearch(problem):
         # check happens before expansion
         if problem.isGoalState(leaf_node):
             # return the solution if solution is found
-            print("we found the goal!")
+            #print("we found the goal!")
             return pathActions 
         for node, action, cost in problem.getSuccessors(leaf_node):
-            # I need to fix this
-            # I need to add checking if node is in the fringe
             if node in exploredorFringeSet:
                 pass
             else:
@@ -211,7 +205,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     fringe = util.PriorityQueue()
     # push initial state, initial actions, and initial cost
     initial_state = (problem.getStartState(), [], 0)
-    fringe.push(initial_state, 0)
+    fringe.push(initial_state, 0 + heuristic(initial_state[0], problem))
     # initialise the explored set
     exploredorFringeSet = set()
     # add the node to the explored set
@@ -228,18 +222,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         # check happens before expansion
         if problem.isGoalState(leaf_node):
             # return the solution if solution is found
-            print("we found the goal!")
+#             print("we found the goal!")
             return pathActions 
         for node, action, cost in problem.getSuccessors(leaf_node):
-            # I need to fix this
-            # I need to add checking if node is in the fringe
             if node in exploredorFringeSet:
                 pass
             else:
                 newPathActions = pathActions + [action]
-                newPathCost = pathCost + cost + heuristic(node, problem)
+                newPathCost = pathCost + cost
                 child_state = (node, newPathActions, newPathCost)
-                fringe.push(child_state, newPathCost)
+                fringe.push(child_state, newPathCost + heuristic(node, problem))
                 exploredorFringeSet.add(node)
 
 
