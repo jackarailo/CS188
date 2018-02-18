@@ -149,9 +149,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        ################# CODE NEEDS FIXING DEPTH ##################################
-        
-        
         
         ## CALL MINIMAX, evaluate gameStates, and return actions to the best gamestate
         ## Gamestates, depth, agents and actions to be controlled by getAction
@@ -205,7 +202,65 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        ## Almost the same getAction function as the minimax Agent
+        legalMoves = gameState.getLegalActions(0) # 0 is pacman agent
+        # alpha and beta initialised as -inf and +inf
+        alpha = -float("inf")
+        beta = float("inf")
+        scores = []
+        for action in legalMoves:
+            scores.append(self.minmax_decision(gameState.generateSuccessor(0, action), 1, 0, alpha, beta)) # 0 is pacman agent and 1 the first ghost
+            alpha = max(alpha, max(scores))
+        
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        return legalMoves[chosenIndex]
+            
+    def minmax_decision(self, gameState, agent, depth, alpha, beta):
+        
+        # Check for Goal State (and depth state to be added)!!!
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        
+        # Restart if No of agents has been exceeded
+        if agent == gameState.getNumAgents():
+            agent = 0
+            depth += 1
+            if depth == self.depth:
+                return self.evaluationFunction(gameState)
+        
+        # Choose min or max depending on agent, pacman 0 or ghost larger/different than 0
+        if agent == 0:
+            return self.max_value(gameState, agent, depth, alpha, beta)
+        elif agent > 0:
+            return self.min_value(gameState, agent, depth, alpha, beta)
+                
+    def max_value(self, gameState, agent, depth, alpha, beta):
+        v = -float("inf")
+        for action in gameState.getLegalActions(agent): # agent 0 is Pacman
+            v = max(v, self.minmax_decision(gameState.generateSuccessor(agent, action), agent + 1, depth, alpha, beta))
+            if v > beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+                
+    def min_value(self, gameState, agent, depth, alpha, beta):
+        v = float("inf")
+        for action in gameState.getLegalActions(agent):
+            v = min(v, self.minmax_decision(gameState.generateSuccessor(agent, action), agent + 1, depth, alpha, beta))
+            if v < alpha:
+                return v
+            beta = min(beta, v)
+        return v
+        
+        
+        
+        
+        
+        
+        
+        
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
