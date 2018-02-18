@@ -252,14 +252,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if v < alpha:
                 return v
             beta = min(beta, v)
-        return v
-        
-        
-        
-        
-        
-        
-        
+        return v        
         
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -275,7 +268,51 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        ## Almost the same getAction function as the minimax Agent
+        legalMoves = gameState.getLegalActions(0) # 0 is pacman agent
+        scores = [self.expectimax_decision(gameState.generateSuccessor(0, action), 1, 0) for action in legalMoves] # 0 is pacman agent and 1 the first ghost
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        return legalMoves[chosenIndex]
+                
+    def expectimax_decision(self, gameState, agent, depth):
+        
+        # Check for Goal State (and depth state to be added)!!!
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        
+        # Restart if No of agents has been exceeded
+        if agent == gameState.getNumAgents():
+            agent = 0
+            depth += 1
+            if depth == self.depth:
+                return self.evaluationFunction(gameState)
+        
+        # Choose min or max depending on agent, pacman 0 or ghost larger/different than 0
+        if agent == 0:
+            return self.max_value(gameState, agent, depth)
+        elif agent > 0:
+            return self.expected_value(gameState, agent, depth)
+                
+    def max_value(self, gameState, agent, depth):
+        v = -float("inf")
+        for action in gameState.getLegalActions(agent): # agent 0 is Pacman
+            v = max(v, self.expectimax_decision(gameState.generateSuccessor(agent, action), agent + 1, depth))
+        return v
+                
+    def expected_value(self, gameState, agent, depth):
+        v = 0
+        for action in gameState.getLegalActions(agent):
+            prob = self.probability(action, gameState.getLegalActions(agent))
+            v += prob * self.expectimax_decision(gameState.generateSuccessor(agent, action), agent + 1, depth)
+        return v
+    
+    def probability(self, action, Actions):
+        # For this implementation each action has equal probability
+        return 1.0 / len(Actions)
+        
+        
 
 def betterEvaluationFunction(currentGameState):
     """
