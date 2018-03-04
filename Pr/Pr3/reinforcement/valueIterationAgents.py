@@ -14,6 +14,7 @@
 
 import mdp, util
 
+
 from learningAgents import ValueEstimationAgent
 
 class ValueIterationAgent(ValueEstimationAgent):
@@ -45,7 +46,17 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-
+        # Value iteration works based on the Belman equations
+        for _ in range(self.iterations):
+            values = self.values.copy()
+            for state in mdp.getStates():
+                actions = self.mdp.getPossibleActions(state)
+                if not actions:
+                    values[state] = 0
+                else:
+                    values[state] = max(self.computeQValueFromValues(state, action) 
+                                    for action in actions)
+            self.values = values
 
     def getValue(self, state):
         """
@@ -60,8 +71,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        return sum( prob * (self.mdp.getReward(state, action, transitionState) + self.discount * self.getValue(transitionState)) 
+                    for transitionState, prob in self.mdp.getTransitionStatesAndProbs(state, action))
+        
+        
     def computeActionFromValues(self, state):
         """
           The policy is the best action in the given state
@@ -72,6 +85,13 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        actions = self.mdp.getPossibleActions(state)
+        if not actions:
+            return None
+        return max(actions, key = lambda x: self.computeQValueFromValues(state, x))        
+        
+        
+        
         util.raiseNotDefined()
 
     def getPolicy(self, state):
